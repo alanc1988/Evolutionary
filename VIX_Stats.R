@@ -172,3 +172,51 @@ getPercentMoveVIX <- function(period=1)
   signif(unname(PM),4)
 }
 
+timeToPercentDrop <- function(timeFrameUp,runUp,drop,timeFrameDown)
+{
+  x1DayPMMoveVix <- getPercentMoveVIX(1)
+  
+  tVix <- getPercentMoveVIX(timeFrameUp)
+  
+  i <- which(tVix>runUp)
+  lastCross = i[length(i)]
+  
+  dayI <- length(i)-1
+  bucketsI <- c(lastCross)
+  
+  for(dayI in (length(i)-1):1)
+  {
+    if(i[dayI]<(lastCross-timeFrameUp))
+    {
+      lastCross <- i[dayI]
+      bucketsI <- c(lastCross,bucketsI)
+    }
+  }
+  
+  hits <- c()
+  
+  for(i in length(bucketsI):1)
+  {
+    day <- bucketsI[i]
+    for(i2 in 1:timeFrameDown)
+    {
+      temp <- day+i2
+      if(x1DayPMMoveVix[temp] <= -1*drop)
+      {    
+        hits<- c(hits,i2)
+        break
+      }
+    }
+  }
+  mean <- mean(hits)
+  median <- median(hits)
+  sd <- sd(hits)
+  x <- length(hits)
+  n <- length(bucketsI)
+  min <- min(hits)
+  max <- max(hits)
+  output <- rbind(mean,median,sd,x,n,min,max)
+  round(output,3)
+}
+
+
